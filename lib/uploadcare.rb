@@ -16,6 +16,7 @@ module Uploadcare
     cache_files: true,
     autostore: :auto,
     auth_scheme: :secure,
+    check_url_duplicates: false,
   }
 
   def self.default_settings
