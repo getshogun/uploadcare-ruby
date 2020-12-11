@@ -24,6 +24,8 @@ module Uploadcare
           frd.response :follow_redirects, limit: 3, callback: lambda{|old, env| auth_strategy.apply(env) }
           frd.response :uploadcare_parse_json
 
+          Array(options[:api_middlewares]).each { |middleware| frd.use(middleware) }
+
           frd.adapter :net_http # actually, default adapter, just to be clear
         end
       end
