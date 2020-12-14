@@ -14,6 +14,8 @@ module Uploadcare
           frd.response :uploadcare_raise_error
           frd.response :uploadcare_parse_json
 
+          Array(options[:upload_middlewares]).each { |middleware| frd.use(middleware) }
+
           frd.adapter :net_http
         end
       end

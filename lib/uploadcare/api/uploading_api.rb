@@ -30,16 +30,26 @@ module Uploadcare
     # Upload from an URL
     def upload_url(url, options = {})
       params = upload_params(options).for_url_upload(url)
-      token = request_file_upload(params)
+      file_upload_response = request_file_upload(params)
 
-      upload_status = poll_upload_result(token)
+      handle_response(file_upload_response)
+    end
+    alias_method :upload_from_url, :upload_url
+
+    def handle_response(response)
+      return handle_token_response(response) if response['type'] == 'token'
+
+      Uploadcare::Api::File.new(self, response['file_id'], response)
+    end
+
+    def handle_token_response(response)
+      upload_status = poll_upload_result(response.fetch('token'))
       if upload_status['status'] == 'error'
         raise ArgumentError.new(upload_status['error'])
       end
 
       Uploadcare::Api::File.new(self, upload_status['file_id'])
     end
-    alias_method :upload_from_url, :upload_url
 
     private
 
@@ -50,7 +60,7 @@ module Uploadcare
 
     def request_file_upload(upload_params)
       response = @upload_connection.post('/from_url/', upload_params)
-      token = response.body['token']
+      response.body
     end
 
     def poll_upload_result(token)

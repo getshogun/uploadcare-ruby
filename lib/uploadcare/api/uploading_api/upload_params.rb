@@ -13,15 +13,16 @@ module Uploadcare
         {
           source_url: parse_url(url),
           pub_key: public_key,
-          store: store
-        }.reject { |k, v| v.nil? }
+          store: store,
+          check_URL_duplicates: check_url_duplicates
+        }.compact
       end
 
       def for_file_upload(files)
         {
           UPLOADCARE_PUB_KEY: public_key,
           UPLOADCARE_STORE: store
-        }.reject { |k, v| v.nil? }.merge(file_params(files))
+        }.compact.merge(file_params(files))
       end
 
       private
@@ -39,6 +40,14 @@ module Uploadcare
         per_request_value = request_options[:store]
 
         mapping[per_request_value] || mapping[global_value]
+      end
+
+      def check_url_duplicates
+        mapping = { true => 1, false => 0 }
+
+        return mapping[request_options[:check_url_duplicates]] if request_options.key?(:check_url_duplicates)
+
+        mapping[global_options[:check_url_duplicates]]
       end
 
       def file_params(files)
